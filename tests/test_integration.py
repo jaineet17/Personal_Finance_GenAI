@@ -90,11 +90,12 @@ class TestIntegration(unittest.TestCase):
             # Create monthly_aggregates table if it doesn't exist
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS monthly_aggregates (
-                    month TEXT PRIMARY KEY,
-                    total_income REAL,
-                    total_expenses REAL,
-                    net_cash_flow REAL,
-                    transaction_count INTEGER
+                    month TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    total_amount REAL NOT NULL,
+                    count INTEGER NOT NULL,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (month, category)
                 )
             ''')
             
