@@ -29,12 +29,29 @@ jobs:
           pip install flake8
           flake8 src
       
+      - name: Create test data directory if needed
+        run: |
+          mkdir -p tests/test_data/raw
+          mkdir -p tests/test_data/processed
+          # If test_transactions.csv doesn't exist, create a sample one
+          if [ ! -f tests/test_data/raw/test_transactions.csv ]; then
+            echo "date,description,amount,category,account" > tests/test_data/raw/test_transactions.csv
+            echo "2023-01-01,Grocery Store,-50.25,Food,Credit Card" >> tests/test_data/raw/test_transactions.csv
+            echo "2023-01-02,Gas Station,-35.00,Transportation,Credit Card" >> tests/test_data/raw/test_transactions.csv
+            echo "2023-01-03,Salary,2000.00,Income,Checking" >> tests/test_data/raw/test_transactions.csv
+          fi
+      
       - name: Run tests
         run: python -m tests.run_tests --report
         env:
           DEFAULT_LLM_PROVIDER: huggingface
-          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY || 'dummy_key_for_ci' }}
           DATA_DIR: tests/test_data
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
       
       - name: Build frontend
         run: |
