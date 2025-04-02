@@ -311,7 +311,7 @@ class TestIntegration(unittest.TestCase):
                 ))
             
             # Update monthly aggregates
-            cls.db._update_monthly_aggregates()
+            cls.db._update_aggregates()
             
             # Commit changes
             cls.db.conn.commit()
