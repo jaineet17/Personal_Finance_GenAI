@@ -73,7 +73,7 @@ jobs:
           echo "- [Phase 6 Completion](PHASE_6_COMPLETION.md)" >> site_docs/index.md
       
       - name: Archive documentation
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: project-documentation
-          path: site_docs/ 
+          name: documentation
+          path: docs/ 
