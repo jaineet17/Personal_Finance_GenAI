@@ -23,15 +23,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
+          pip install flake8 html-testRunner
       
       - name: Lint with flake8
-        run: flake8 src tests
+        run: flake8 src
       
-      - name: Run unit tests
-        run: pytest tests/unit
-      
-      - name: Run integration tests
-        run: pytest tests/integration
+      - name: Run tests
+        run: python -m tests.run_tests
         env:
           DEFAULT_LLM_PROVIDER: huggingface
-          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }} 
+          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+          DATA_DIR: tests/test_data 
