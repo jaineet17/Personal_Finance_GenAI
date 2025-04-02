@@ -154,7 +154,7 @@ def prepare_financial_context(retrieval_results: Any,
                              include_categories: bool = True,
                              include_insights: bool = True) -> str:
     """Format retrieved data into a context string for the LLM
-    
+
     Args:
         retrieval_results: Results from the retrieval system (can be Dict or List[Dict])
         spending_insights: Optional spending insights data
@@ -163,23 +163,23 @@ def prepare_financial_context(retrieval_results: Any,
         include_transactions: Whether to include transaction data
         include_categories: Whether to include category data
         include_insights: Whether to include financial insights
-        
+
     Returns:
         Formatted context string
     """
     context_parts = []
-    
+
     # Add time period information if provided
     if time_period:
         context_parts.append(f"TIME PERIOD: {time_period}")
-        
+
     # Add category filter information if provided
     if category:
         context_parts.append(f"CATEGORY FILTER: {category}")
-    
+
     # Handle different formats of retrieval_results
     transactions = []
-    
+
     # Case 1: retrieval_results is a Dict with transaction data
     if isinstance(retrieval_results, dict):
         if "transactions" in retrieval_results:
@@ -198,14 +198,14 @@ def prepare_financial_context(retrieval_results: Any,
                 start_date = date_range["start"]
                 end_date = date_range["end"]
                 context_parts.append(f"DATA TIME RANGE: {start_date} to {end_date}")
-                
+
                 # Extract month/year for clarity
                 try:
                     start_month_year = "-".join(start_date.split("-")[:2])
                     end_month_year = "-".join(end_date.split("-")[:2])
                     if start_month_year == end_month_year:
                         context_parts.append(f"MONTH/YEAR: {start_month_year}")
-                        
+
                         # Add month name for better readability
                         month_names = {
                             "01": "January", "02": "February", "03": "March", "04": "April",
@@ -220,32 +220,32 @@ def prepare_financial_context(retrieval_results: Any,
                         context_parts.append(f"PERIOD: {start_month_year} to {end_month_year}")
                 except:
                     pass
-                
+
                 context_parts.append("")
     # Case 2: retrieval_results is a List[Dict] of transactions
     elif isinstance(retrieval_results, list):
         transactions = retrieval_results
-        
+
     # Add transaction information
     if include_transactions and transactions:
         # Add transaction count
         context_parts.append(f"TOTAL TRANSACTIONS: {len(transactions)}")
         context_parts.append("")
-        
+
         # Format transactions in a readable way
         context_parts.append("TRANSACTIONS:")
-        
+
         # Define a function to format a single transaction
         def format_transaction(tx):
             tx_parts = []
             # Format date if available
             if "date" in tx:
                 tx_parts.append(f"Date: {tx['date']}")
-            
+
             # Format description if available
             if "description" in tx:
                 tx_parts.append(f"Description: {tx['description']}")
-            
+
             # Format amount if available (ensure it's shown as currency)
             if "amount" in tx:
                 # Make amount negative to represent spending (if not already)
@@ -258,79 +258,79 @@ def prepare_financial_context(retrieval_results: Any,
                         tx_parts.append(f"Amount: -{amount_str}")
                 else:
                     tx_parts.append(f"Amount: {amount}")
-            
+
             # Format category if available
             if "category" in tx:
                 tx_parts.append(f"Category: {tx['category']}")
-                
+
             # Format merchant if available
             if "merchant" in tx:
                 tx_parts.append(f"Merchant: {tx['merchant']}")
-                
+
             # Return formatted transaction
             return ", ".join(tx_parts)
-        
+
         # Format and add each transaction (limit to first 20 for context size)
         for i, tx in enumerate(transactions[:20]):
             context_parts.append(f"{i+1}. {format_transaction(tx)}")
-            
+
         # Add note if transactions were truncated
         if len(transactions) > 20:
             context_parts.append(f"... and {len(transactions) - 20} more transactions (truncated)")
-            
+
         context_parts.append("")
-            
+
     # Add spending insights if available
     if include_insights and spending_insights:
         context_parts.append("SPENDING INSIGHTS:")
-        
+
         # Add total spending
         if "total_spending" in spending_insights:
             total = spending_insights["total_spending"]
             context_parts.append(f"Total Spending: ${abs(total):.2f}")
-            
+
         # Add category breakdown
         if "category_breakdown" in spending_insights:
             context_parts.append("Category Breakdown:")
             categories = spending_insights["category_breakdown"]
             for category, amount in categories.items():
                 context_parts.append(f"  {category}: ${abs(amount):.2f}")
-                
+
         # Add month-over-month comparison
         if "month_comparison" in spending_insights:
             context_parts.append("Month-over-Month Comparison:")
             comparison = spending_insights["month_comparison"]
             for month, amount in comparison.items():
                 context_parts.append(f"  {month}: ${abs(amount):.2f}")
-                
+
         context_parts.append("")
-        
+
     # If no data was added, add a note
     if len(context_parts) == 0:
         context_parts.append("No financial data available for this query.")
-        
+
     # Join all parts with newlines and return
     return "\n".join(context_parts)
 
 # Function to format transactions for categorization
 def format_transactions_for_categorization(transactions: List[Dict]) -> str:
     """Format transaction data for the categorization prompt
-    
+
     Args:
         transactions: List of transaction dictionaries
-        
+
     Returns:
         Formatted transaction string
     """
     transaction_strings = []
-    
+
     for i, tx in enumerate(transactions):
         tx_id = tx.get("id", f"tx_{i}")
         description = tx.get("description", "Unknown transaction")
         amount = tx.get("amount", 0)
         date = tx.get("date", "")
         merchant = tx.get("merchant", "")
-        
+
         tx_str = f"Transaction ID: {tx_id}\n"
         tx_str += f"Description: {description}\n"
         tx_str += f"Amount: ${abs(amount):.2f}"
@@ -342,18 +342,18 @@ def format_transactions_for_categorization(transactions: List[Dict]) -> str:
         if merchant:
             tx_str += f"\nMerchant: {merchant}"
         tx_str += "\n"
-        
+
         transaction_strings.append(tx_str)
-    
+
     return "\n".join(transaction_strings)
 
 # Function to extract insights from LLM response
 def extract_financial_insights(llm_response: str) -> Dict:
     """Parse LLM response to extract structured financial insights
-    
+
     Args:
         llm_response: Raw response from LLM
-        
+
     Returns:
         Dictionary of extracted insights
     """
@@ -362,31 +362,31 @@ def extract_financial_insights(llm_response: str) -> Dict:
         "recommendations": [],
         "summary": ""
     }
-    
+
     # Extract categories (looking for bullet points or numbered lists)
     category_lines = []
     in_category_section = False
-    
+
     for line in llm_response.split('\n'):
         line = line.strip()
-        
+
         if not line:
             continue
-            
+
         # Look for category section headers
         if "categor" in line.lower() and ":" in line:
             in_category_section = True
             continue
-            
+
         # Look for recommendation section headers
         if "recommend" in line.lower() and ":" in line:
             in_category_section = False
-            
+
         # Collect category lines
         if in_category_section and (line.startswith('-') or line.startswith('•') or 
                                   (line[0].isdigit() and line[1:2] in ['.', ')'])):
             category_lines.append(line)
-    
+
     # Extract categories
     for line in category_lines:
         # Remove bullets/numbers
@@ -396,7 +396,7 @@ def extract_financial_insights(llm_response: str) -> Dict:
             category = line[2:].strip()
         else:
             category = line.strip()
-            
+
         # Extract category and amount if present
         parts = category.split(':')
         if len(parts) > 1:
@@ -416,25 +416,25 @@ def extract_financial_insights(llm_response: str) -> Dict:
                 insights["categories"].append({"category": cat_name, "description": amount_str})
         else:
             insights["categories"].append({"category": category})
-    
+
     # Extract recommendations (similar approach)
     recommendation_lines = []
     in_recommendation_section = False
-    
+
     for line in llm_response.split('\n'):
         line = line.strip()
-        
+
         if not line:
             continue
-            
+
         if "recommend" in line.lower() and ":" in line:
             in_recommendation_section = True
             continue
-            
+
         if in_recommendation_section and (line.startswith('-') or line.startswith('•') or 
                                        (line[0].isdigit() and line[1:2] in ['.', ')'])):
             recommendation_lines.append(line)
-    
+
     # Process recommendations
     for line in recommendation_lines:
         if line.startswith('-') or line.startswith('•'):
@@ -443,9 +443,9 @@ def extract_financial_insights(llm_response: str) -> Dict:
             rec = line[2:].strip()
         else:
             rec = line.strip()
-            
+
         insights["recommendations"].append(rec)
-    
+
     # Extract summary (first paragraph or conclusion section)
     summary_lines = []
     for line in llm_response.split('\n'):
@@ -453,9 +453,9 @@ def extract_financial_insights(llm_response: str) -> Dict:
             summary_lines.append(line.strip())
             if len(summary_lines) == 1:  # Just get the first paragraph
                 break
-                
+
     insights["summary"] = " ".join(summary_lines)
-    
+
     return insights
 
 
@@ -467,7 +467,7 @@ def get_current_date_formatted() -> str:
 # Save formatted prompts to a JSON file
 def save_prompts_to_file(output_path: str = None) -> None:
     """Save all prompts to a JSON file for easy access
-    
+
     Args:
         output_path: Path to save the prompts, defaults to prompts directory
     """
@@ -475,7 +475,7 @@ def save_prompts_to_file(output_path: str = None) -> None:
         # Get the directory of this file
         dir_path = Path(__file__).parent
         output_path = dir_path / "finance_prompts.json"
-    
+
     prompt_dict = {
         "system": RAG_SYSTEM_PROMPT,
         "financial_query": FINANCIAL_QUERY_PROMPT,
@@ -487,20 +487,20 @@ def save_prompts_to_file(output_path: str = None) -> None:
         "debt_reduction": DEBT_REDUCTION_PROMPT,
         "investment_recommendation": INVESTMENT_RECOMMENDATION_PROMPT,
     }
-    
+
     with open(output_path, 'w') as f:
         json.dump(prompt_dict, f, indent=2)
-    
+
     print(f"Prompts saved to {output_path}")
 
 def format_finance_rag_prompt(query: str, context: str, conversation_history: str = "") -> str:
     """Format RAG prompt for finance queries
-    
+
     Args:
         query (str): User query
         context (str): Financial context
         conversation_history (str): Previous conversation
-        
+
     Returns:
         str: Formatted prompt
     """
@@ -509,16 +509,16 @@ Use the information below to answer the user's query.
 If you can't find the specific answer in the provided information, say so rather than making something up.
 Be specific and provide exact amounts when available. Current date: ${current_date}
 """
-    
+
     # Get current date
     current_date = datetime.now().strftime("%Y-%m-%d")
     system_part = system_part.replace("${current_date}", current_date)
-    
+
     # Include conversation history if provided
     history_part = ""
     if conversation_history:
         history_part = f"\nCONVERSATION HISTORY:\n{conversation_history}\n"
-    
+
     # Format the main prompt
     prompt = f"""{system_part}
 
@@ -531,14 +531,14 @@ USER QUERY:
 
 ANSWER:
 """
-    
+
     return prompt
 
 if __name__ == "__main__":
     # Example usage
     print("Finance RAG Prompts Module")
     save_prompts_to_file()
-    
+
     # Example of formatting transactions
     example_transactions = [
         {
@@ -556,6 +556,6 @@ if __name__ == "__main__":
             "merchant": "Property Management"
         }
     ]
-    
+
     print("\nExample of formatted transactions for categorization:")
     print(format_transactions_for_categorization(example_transactions)) 

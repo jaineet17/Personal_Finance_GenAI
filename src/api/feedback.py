@@ -57,11 +57,11 @@ async def submit_feedback(
     # Generate ID for this feedback
     feedback_id = str(uuid.uuid4())
     timestamp = time.time()
-    
+
     try:
         # Initialize feedback table if it doesn't exist
         init_feedback_table(db)
-        
+
         # Store feedback in database
         db.execute(
             """
@@ -81,7 +81,7 @@ async def submit_feedback(
                 timestamp
             )
         )
-        
+
         # Also store in memory for quick access
         feedback_store[feedback_id] = {
             "id": feedback_id,
@@ -94,14 +94,14 @@ async def submit_feedback(
             "suggestion": feedback.suggestion,
             "timestamp": timestamp
         }
-        
+
         return {
             "feedback_id": feedback_id,
             "status": "success",
             "message": "Feedback submitted successfully",
             "timestamp": timestamp
         }
-        
+
     except Exception as e:
         logger.error(f"Error submitting feedback: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error submitting feedback: {str(e)}")
@@ -115,12 +115,12 @@ async def get_feedback(
     # Check memory cache first
     if feedback_id in feedback_store:
         return feedback_store[feedback_id]
-    
+
     # Otherwise, query database
     try:
         # Make sure table exists
         init_feedback_table(db)
-        
+
         result = db.execute(
             """
             SELECT id, query_id, rating, comment, category, original_query, response_text, suggestion, timestamp 
@@ -129,10 +129,10 @@ async def get_feedback(
             """, 
             (feedback_id,)
         ).fetchone()
-        
+
         if not result:
             raise HTTPException(status_code=404, detail="Feedback not found")
-        
+
         # Convert to dict
         feedback_data = {
             "id": result[0],
@@ -145,12 +145,12 @@ async def get_feedback(
             "suggestion": result[7],
             "timestamp": result[8]
         }
-        
+
         # Update memory cache
         feedback_store[feedback_id] = feedback_data
-        
+
         return feedback_data
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -166,7 +166,7 @@ async def get_feedback_by_query(
     try:
         # Make sure table exists
         init_feedback_table(db)
-        
+
         results = db.execute(
             """
             SELECT id, query_id, rating, comment, category, original_query, response_text, suggestion, timestamp 
@@ -176,10 +176,10 @@ async def get_feedback_by_query(
             """, 
             (query_id,)
         ).fetchall()
-        
+
         if not results:
             return []
-        
+
         # Convert to list of dicts
         feedback_list = []
         for result in results:
@@ -195,12 +195,12 @@ async def get_feedback_by_query(
                 "timestamp": result[8]
             }
             feedback_list.append(feedback_data)
-            
+
             # Update memory cache
             feedback_store[result[0]] = feedback_data
-        
+
         return feedback_list
-        
+
     except Exception as e:
         logger.error(f"Error retrieving feedback: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error retrieving feedback: {str(e)}")
@@ -217,7 +217,7 @@ async def list_feedback(
     try:
         # Make sure table exists
         init_feedback_table(db)
-        
+
         # Build query
         query = """
             SELECT id, query_id, rating, comment, category, original_query, response_text, suggestion, timestamp 
@@ -225,26 +225,26 @@ async def list_feedback(
             WHERE 1=1
         """
         params = []
-        
+
         # Add filters
         if min_rating is not None:
             query += " AND rating >= ?"
             params.append(min_rating)
-        
+
         if max_rating is not None:
             query += " AND rating <= ?"
             params.append(max_rating)
-        
+
         # Add order and limit
         query += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
         params.extend([limit, offset])
-        
+
         # Execute query
         results = db.execute(query, tuple(params)).fetchall()
-        
+
         if not results:
             return []
-        
+
         # Convert to list of dicts
         feedback_list = []
         for result in results:
@@ -260,12 +260,12 @@ async def list_feedback(
                 "timestamp": result[8]
             }
             feedback_list.append(feedback_data)
-            
+
             # Update memory cache
             feedback_store[result[0]] = feedback_data
-        
+
         return feedback_list
-        
+
     except Exception as e:
         logger.error(f"Error listing feedback: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error listing feedback: {str(e)}")
@@ -278,7 +278,7 @@ async def get_feedback_stats(
     try:
         # Make sure table exists
         init_feedback_table(db)
-        
+
         # Get count of feedback by rating
         rating_counts = db.execute(
             """
@@ -288,7 +288,7 @@ async def get_feedback_stats(
             ORDER BY rating
             """
         ).fetchall()
-        
+
         # Get average rating
         avg_rating = db.execute(
             """
@@ -296,7 +296,7 @@ async def get_feedback_stats(
             FROM feedback
             """
         ).fetchone()[0]
-        
+
         # Get total count
         total_count = db.execute(
             """
@@ -304,18 +304,18 @@ async def get_feedback_stats(
             FROM feedback
             """
         ).fetchone()[0]
-        
+
         # Format statistics
         rating_stats = {}
         for rating, count in rating_counts:
             rating_stats[str(rating)] = count
-        
+
         return {
             "total_count": total_count,
             "average_rating": avg_rating,
             "rating_counts": rating_stats
         }
-        
+
     except Exception as e:
         logger.error(f"Error getting feedback stats: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting feedback stats: {str(e)}") 

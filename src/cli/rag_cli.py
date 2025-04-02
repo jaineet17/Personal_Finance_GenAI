@@ -42,13 +42,13 @@ def setup_rag_system(
     temperature: float = 0.3
 ) -> FinanceRAG:
     """Initialize the RAG system
-    
+
     Args:
         llm_provider (str): LLM provider (openai, anthropic, etc.)
         llm_model (str, optional): Specific model to use
         embedding_model (str): Embedding model name
         temperature (float): Temperature for LLM generation
-        
+
     Returns:
         FinanceRAG: Initialized RAG system
     """
@@ -73,7 +73,7 @@ def process_query(
     return_context: bool = False
 ) -> None:
     """Process a user query and display the response
-    
+
     Args:
         rag (FinanceRAG): RAG system instance
         query (str): User query
@@ -98,19 +98,19 @@ def process_query(
                     date_range=date_range,
                     return_context=False
                 )
-                
+
             # Display response
             console.print("\n[bold green]Response:[/bold green]")
             console.print(Panel(Markdown(response), border_style="green"))
-            
+
             # Display context if requested
             if return_context:
                 console.print("\n[bold blue]Retrieved Context:[/bold blue]")
-                
+
                 # Show transactions in a table
                 if "retrieved_data" in context and "transactions" in context["retrieved_data"]:
                     transactions = context["retrieved_data"]["transactions"]
-                    
+
                     if transactions:
                         table = Table(title="Retrieved Transactions")
                         table.add_column("Description", style="cyan", no_wrap=True)
@@ -118,12 +118,12 @@ def process_query(
                         table.add_column("Date", style="magenta")
                         table.add_column("Category", style="yellow")
                         table.add_column("Similarity", style="blue", justify="right")
-                        
+
                         for tx in transactions:
                             amount = tx.get("amount", 0)
                             amount_str = f"${abs(amount):.2f}"
                             amount_style = "green" if amount >= 0 else "red"
-                            
+
                             table.add_row(
                                 tx.get("description", "Unknown"),
                                 f"[{amount_style}]{amount_str}[/{amount_style}]",
@@ -131,13 +131,13 @@ def process_query(
                                 tx.get("category", "Uncategorized"),
                                 f"{tx.get('similarity', 0):.2f}"
                             )
-                            
+
                         console.print(table)
-                
+
                 # Show insights if available
                 if "retrieved_data" in context and "insights" in context["retrieved_data"]:
                     insights = context["retrieved_data"]["insights"]
-                    
+
                     console.print("\n[bold blue]Financial Insights:[/bold blue]")
                     if "total_spending" in insights:
                         console.print(f"Total Spending: ${insights['total_spending']:.2f}")
@@ -147,19 +147,19 @@ def process_query(
                         net_flow = insights["net_cash_flow"]
                         flow_color = "green" if net_flow >= 0 else "red"
                         console.print(f"Net Cash Flow: [{flow_color}]${net_flow:.2f}[/{flow_color}]")
-                    
+
                     # Show top categories
                     if "top_categories" in insights and insights["top_categories"]:
                         console.print("\n[bold yellow]Top Spending Categories:[/bold yellow]")
                         for cat in insights["top_categories"]:
                             console.print(f"- {cat['category']}: ${cat['amount']:.2f}")
-            
+
         except Exception as e:
             console.print(f"[bold red]Error processing query: {e}")
 
 def run_spending_analysis(rag: FinanceRAG, time_period: str, category: Optional[str] = None) -> None:
     """Run and display spending analysis
-    
+
     Args:
         rag (FinanceRAG): RAG system instance
         time_period (str): Time period to analyze
@@ -171,26 +171,26 @@ def run_spending_analysis(rag: FinanceRAG, time_period: str, category: Optional[
                 time_period=time_period,
                 category_filter=category
             )
-            
+
             if "error" in analysis:
                 console.print(f"[bold red]Error: {analysis['error']}")
                 return
-                
+
             # Display analysis
             console.print("\n[bold green]Spending Analysis:[/bold green]")
             console.print(Panel(Markdown(analysis["analysis"]), border_style="green"))
-            
+
             # Display structured insights
             if "structured_insights" in analysis:
                 insights = analysis["structured_insights"]
-                
+
                 if insights["categories"]:
                     console.print("\n[bold yellow]Categorized Spending:[/bold yellow]")
-                    
+
                     table = Table()
                     table.add_column("Category", style="cyan")
                     table.add_column("Amount", style="green", justify="right")
-                    
+
                     for cat in insights["categories"]:
                         if "amount" in cat:
                             table.add_row(
@@ -202,20 +202,20 @@ def run_spending_analysis(rag: FinanceRAG, time_period: str, category: Optional[
                                 cat["category"],
                                 cat.get("description", "")
                             )
-                            
+
                     console.print(table)
-                
+
                 if insights["recommendations"]:
                     console.print("\n[bold green]Recommendations:[/bold green]")
                     for i, rec in enumerate(insights["recommendations"]):
                         console.print(f"{i+1}. {rec}")
-            
+
         except Exception as e:
             console.print(f"[bold red]Error running spending analysis: {e}")
 
 def categorize_sample_transactions(rag: FinanceRAG) -> None:
     """Categorize sample transactions
-    
+
     Args:
         rag (FinanceRAG): RAG system instance
     """
@@ -257,60 +257,60 @@ def categorize_sample_transactions(rag: FinanceRAG) -> None:
             "merchant": "Acme Corp"
         }
     ]
-    
+
     # Display original transactions
     console.print("[bold]Original Transactions:[/bold]")
-    
+
     table = Table()
     table.add_column("ID", style="dim")
     table.add_column("Description", style="cyan")
     table.add_column("Amount", style="green", justify="right")
     table.add_column("Date", style="magenta")
-    
+
     for tx in transactions:
         amount = tx["amount"]
         amount_str = f"${abs(amount):.2f}"
         amount_style = "green" if amount >= 0 else "red"
-        
+
         table.add_row(
             tx["id"],
             tx["description"],
             f"[{amount_style}]{amount_str}[/{amount_style}]",
             tx["date"]
         )
-        
+
     console.print(table)
-    
+
     # Categorize transactions
     with console.status("[bold green]Categorizing transactions..."):
         categorized = rag.categorize_transactions(transactions)
-    
+
     # Display categorized transactions
     console.print("\n[bold green]Categorized Transactions:[/bold green]")
-    
+
     table = Table()
     table.add_column("ID", style="dim")
     table.add_column("Description", style="cyan")
     table.add_column("Amount", style="green", justify="right")
     table.add_column("Category", style="yellow")
-    
+
     for tx in categorized:
         amount = tx["amount"]
         amount_str = f"${abs(amount):.2f}"
         amount_style = "green" if amount >= 0 else "red"
-        
+
         table.add_row(
             tx["id"],
             tx["description"],
             f"[{amount_style}]{amount_str}[/{amount_style}]",
             tx["category"]
         )
-        
+
     console.print(table)
 
 def find_similar_transactions(rag: FinanceRAG, description: str) -> None:
     """Find and display transactions similar to a description
-    
+
     Args:
         rag (FinanceRAG): RAG system instance
         description (str): Transaction description to match
@@ -320,26 +320,26 @@ def find_similar_transactions(rag: FinanceRAG, description: str) -> None:
             transaction_description=description,
             n_results=5
         )
-        
+
     if not results["count"]:
         console.print("[yellow]No similar transactions found.")
         return
-        
+
     # Display results
     console.print(f"\n[bold green]Found {results['count']} similar transactions:[/bold green]")
-    
+
     table = Table()
     table.add_column("Description", style="cyan", no_wrap=True)
     table.add_column("Amount", style="green", justify="right")
     table.add_column("Date", style="magenta")
     table.add_column("Category", style="yellow")
     table.add_column("Similarity", style="blue", justify="right")
-    
+
     for tx in results["similar_transactions"]:
         amount = tx.get("amount", 0)
         amount_str = f"${abs(amount):.2f}"
         amount_style = "green" if amount >= 0 else "red"
-        
+
         table.add_row(
             tx.get("description", "Unknown"),
             f"[{amount_style}]{amount_str}[/{amount_style}]",
@@ -347,16 +347,16 @@ def find_similar_transactions(rag: FinanceRAG, description: str) -> None:
             tx.get("category", "Uncategorized"),
             f"{tx.get('similarity', 0):.2f}"
         )
-        
+
     console.print(table)
-    
+
     # Display analysis
     console.print("\n[bold green]Analysis:[/bold green]")
     console.print(Panel(Markdown(results["analysis"]), border_style="green"))
 
 def interactive_mode(rag: FinanceRAG) -> None:
     """Run interactive CLI mode
-    
+
     Args:
         rag (FinanceRAG): RAG system instance
     """
@@ -370,15 +370,15 @@ Type your financial questions or use these commands:
 - [bold blue]/clear[/bold blue]: Clear conversation history
 - [bold blue]/exit[/bold blue]: Exit the program
     """)
-    
+
     while True:
         try:
             user_input = Prompt.ask("\n[bold blue]Ask a question[/bold blue]")
-            
+
             if user_input.lower() == "/exit":
                 console.print("[yellow]Exiting...")
                 break
-                
+
             elif user_input.lower() == "/help":
                 console.print("""
 [bold green]Commands:[/bold green]
@@ -389,37 +389,37 @@ Type your financial questions or use these commands:
 - [bold blue]/clear[/bold blue]: Clear conversation history
 - [bold blue]/exit[/bold blue]: Exit the program
                 """)
-                
+
             elif user_input.lower() == "/clear":
                 rag.clear_conversation_history()
                 console.print("[green]Conversation history cleared.")
-                
+
             elif user_input.lower() == "/categorize":
                 categorize_sample_transactions(rag)
-                
+
             elif user_input.lower().startswith("/analyze"):
                 parts = user_input.split(" ", 1)
                 time_period = "this month"  # Default
-                
+
                 if len(parts) > 1:
                     time_period = parts[1].strip()
-                    
+
                 run_spending_analysis(rag, time_period)
-                
+
             elif user_input.lower().startswith("/similar"):
                 parts = user_input.split(" ", 1)
-                
+
                 if len(parts) > 1:
                     description = parts[1].strip()
                     find_similar_transactions(rag, description)
                 else:
                     console.print("[yellow]Please provide a description to match.")
-                
+
             else:
                 # Regular query
                 show_context = False
                 process_query(rag, user_input, return_context=show_context)
-                
+
         except KeyboardInterrupt:
             console.print("\n[yellow]Exiting...")
             break
@@ -429,13 +429,13 @@ Type your financial questions or use these commands:
 def parse_args():
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(description="Finance RAG CLI")
-    
+
     # Main operation mode
     parser.add_argument(
         "query", nargs="?", default=None,
         help="Query to process (if not provided, interactive mode is started)"
     )
-    
+
     # Model configuration
     parser.add_argument(
         "--provider", type=str, default="openai",
@@ -453,7 +453,7 @@ def parse_args():
         "--temperature", type=float, default=0.3,
         help="Temperature for LLM generation (0.0-1.0)"
     )
-    
+
     # Query filters
     parser.add_argument(
         "--category", type=str, default=None,
@@ -467,7 +467,7 @@ def parse_args():
         "--end-date", type=str, default=None,
         help="End date filter (YYYY-MM-DD)"
     )
-    
+
     # Special commands
     parser.add_argument(
         "--analyze", type=str, default=None,
@@ -481,19 +481,19 @@ def parse_args():
         "--similar", type=str, default=None,
         help="Find transactions similar to description"
     )
-    
+
     # Other options
     parser.add_argument(
         "--show-context", action="store_true",
         help="Show retrieved context along with the response"
     )
-    
+
     return parser.parse_args()
 
 def main():
     """Main entry point"""
     args = parse_args()
-    
+
     try:
         # Initialize RAG system
         rag = setup_rag_system(
@@ -502,22 +502,22 @@ def main():
             embedding_model=args.embedding_model,
             temperature=args.temperature
         )
-        
+
         # Determine date range if provided
         date_range = None
         if args.start_date and args.end_date:
             date_range = (args.start_date, args.end_date)
-        
+
         # Run in appropriate mode
         if args.categorize:
             categorize_sample_transactions(rag)
-            
+
         elif args.analyze:
             run_spending_analysis(rag, args.analyze, args.category)
-            
+
         elif args.similar:
             find_similar_transactions(rag, args.similar)
-            
+
         elif args.query:
             process_query(
                 rag,
@@ -526,15 +526,15 @@ def main():
                 date_range=date_range,
                 return_context=args.show_context
             )
-            
+
         else:
             # No command or query specified, run interactive mode
             interactive_mode(rag)
-            
+
     except Exception as e:
         console.print(f"[bold red]Error: {e}")
         return 1
-        
+
     return 0
 
 if __name__ == "__main__":

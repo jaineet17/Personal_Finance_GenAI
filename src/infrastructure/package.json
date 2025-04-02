@@ -1,0 +1,16 @@
+{
+  "name": "finance-rag-backend",
+  "version": "1.0.0",
+  "description": "Finance RAG API Backend",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy:prod": "serverless deploy --stage prod"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "serverless": "^3.34.0",
+    "serverless-python-requirements": "^6.0.0",
+    "serverless-dotenv-plugin": "^6.0.0"
+  }
+} 

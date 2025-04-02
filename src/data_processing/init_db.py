@@ -8,13 +8,13 @@ load_dotenv()
 def create_database():
     """Initialize the SQLite database with required tables"""
     db_path = Path(os.getenv("PROCESSED_DATA_PATH", "./data/processed")) / "finance.db"
-    
+
     # Create directory if it doesn't exist
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
+
     # Create transactions table with enhanced fields
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS transactions (
@@ -34,7 +34,7 @@ def create_database():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
-    
+
     # Create accounts table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS accounts (
@@ -48,7 +48,7 @@ def create_database():
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
-    
+
     # Create categories table with hierarchy
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS categories (
@@ -60,7 +60,7 @@ def create_database():
         FOREIGN KEY (parent_id) REFERENCES categories (id)
     )
     ''')
-    
+
     # Create monthly aggregates table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS monthly_aggregates (
@@ -75,7 +75,7 @@ def create_database():
         UNIQUE(month_year, category)
     )
     ''')
-    
+
     # Create recurring transactions table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS recurring_transactions (
@@ -91,7 +91,7 @@ def create_database():
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
-    
+
     # Create merchant mapping table for name normalization
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS merchant_mapping (
@@ -104,14 +104,14 @@ def create_database():
         UNIQUE(original_name)
     )
     ''')
-    
+
     # Create indices for performance
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_transactions_merchant ON transactions(merchant)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_transactions_account ON transactions(account_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_monthly_aggregates_date ON monthly_aggregates(year, month)')
-    
+
     # Insert default categories
     default_categories = [
         ('Food', 'expense', None),
@@ -128,16 +128,16 @@ def create_database():
         ('Fees', 'expense', None),
         ('Other', 'expense', None)
     ]
-    
+
     cursor.executemany('''
     INSERT OR IGNORE INTO categories (name, type, parent_id)
     VALUES (?, ?, ?)
     ''', default_categories)
-    
+
     # Commit changes and close connection
     conn.commit()
     conn.close()
-    
+
     print(f"Database initialized at {db_path}")
 
 
@@ -145,7 +145,7 @@ def export_category_mapping_json():
     """Export category mapping to JSON file for standardization"""
     db_path = Path(os.getenv("PROCESSED_DATA_PATH", "./data/processed")) / "finance.db"
     json_path = Path(os.getenv("PROCESSED_DATA_PATH", "./data/processed")) / "category_mapping.json"
-    
+
     # Create a default mapping
     default_mapping = {
         # Chase card categories
@@ -164,33 +164,33 @@ def export_category_mapping_json():
         "Professional Services": "Services",
         "Personal": "Personal",
         "Fees & Adjustments": "Fees",
-        
+
         # Add more mappings as needed
         "Uncategorized": "Other"
     }
-    
+
     if db_path.exists():
         try:
             # Connect to database
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            
+
             # Get all subcategories from transactions
             cursor.execute('''
             SELECT DISTINCT subcategory, category 
             FROM transactions 
             WHERE subcategory IS NOT NULL
             ''')
-            
+
             # Update mapping with actual data
             for subcategory, category in cursor.fetchall():
                 if subcategory and category:
                     default_mapping[subcategory] = category
-            
+
             conn.close()
         except Exception as e:
             print(f"Error querying database for categories: {e}")
-    
+
     # Save mapping to JSON
     try:
         import json

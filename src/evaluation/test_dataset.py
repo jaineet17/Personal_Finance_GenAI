@@ -15,11 +15,11 @@ class TestQuery:
     category: str
     difficulty: str = "medium"
     tags: List[str] = None
-    
+
     def __post_init__(self):
         if self.tags is None:
             self.tags = []
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
         return {
@@ -29,7 +29,7 @@ class TestQuery:
             "difficulty": self.difficulty,
             "tags": self.tags,
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'TestQuery':
         """Create from dictionary."""
@@ -44,15 +44,15 @@ class TestQuery:
 
 class TestDataset:
     """A collection of test queries with ground truth answers."""
-    
+
     def __init__(self, name: str):
         self.name = name
         self.queries: List[TestQuery] = []
-    
+
     def add_query(self, query: TestQuery):
         """Add a query to the dataset."""
         self.queries.append(query)
-    
+
     def save_to_file(self, file_path: str):
         """Save the dataset to a JSON file."""
         data = {
@@ -61,27 +61,27 @@ class TestDataset:
         }
         with open(file_path, 'w') as f:
             json.dump(data, f, indent=2)
-    
+
     @classmethod
     def load_from_file(cls, file_path: str) -> 'TestDataset':
         """Load a dataset from a JSON file."""
         with open(file_path, 'r') as f:
             data = json.load(f)
-        
+
         dataset = cls(name=data.get("name", os.path.basename(file_path)))
         for query_data in data.get("queries", []):
             dataset.add_query(TestQuery.from_dict(query_data))
-        
+
         return dataset
-    
+
     def get_queries_by_category(self, category: str) -> List[TestQuery]:
         """Get all queries in a specific category."""
         return [q for q in self.queries if q.category == category]
-    
+
     def get_queries_by_difficulty(self, difficulty: str) -> List[TestQuery]:
         """Get all queries with a specific difficulty."""
         return [q for q in self.queries if q.difficulty == difficulty]
-    
+
     def get_queries_by_tag(self, tag: str) -> List[TestQuery]:
         """Get all queries with a specific tag."""
         return [q for q in self.queries if tag in q.tags]
@@ -90,7 +90,7 @@ class TestDataset:
 def create_sample_dataset() -> TestDataset:
     """Create a sample dataset for testing."""
     dataset = TestDataset(name="finance_test_dataset")
-    
+
     # Basic financial questions
     dataset.add_query(TestQuery(
         query="What was my total spending last month?",
@@ -99,7 +99,7 @@ def create_sample_dataset() -> TestDataset:
         difficulty="easy",
         tags=["spending", "summary"]
     ))
-    
+
     dataset.add_query(TestQuery(
         query="How much did I spend on groceries in March?",
         ground_truth="You spent $342.19 on groceries in March.",
@@ -107,7 +107,7 @@ def create_sample_dataset() -> TestDataset:
         difficulty="easy",
         tags=["spending", "groceries", "monthly"]
     ))
-    
+
     # Comparative questions
     dataset.add_query(TestQuery(
         query="Am I spending more on dining out this year compared to last year?",
@@ -116,7 +116,7 @@ def create_sample_dataset() -> TestDataset:
         difficulty="medium",
         tags=["spending", "dining", "comparison", "yearly"]
     ))
-    
+
     # Complex analytical questions
     dataset.add_query(TestQuery(
         query="What are my top 3 largest unusual expenses in the past 6 months?",
@@ -125,7 +125,7 @@ def create_sample_dataset() -> TestDataset:
         difficulty="hard",
         tags=["spending", "anomalies", "large expenses"]
     ))
-    
+
     # Forecasting questions
     dataset.add_query(TestQuery(
         query="Based on my spending habits, will I exceed my monthly budget of $3000 this month?",
@@ -134,5 +134,5 @@ def create_sample_dataset() -> TestDataset:
         difficulty="hard",
         tags=["budget", "forecasting", "projection"]
     ))
-    
+
     return dataset 

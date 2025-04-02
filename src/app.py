@@ -19,13 +19,13 @@ load_dotenv()
 def init_app():
     """Initialize the application by creating necessary resources"""
     print("Initializing finance LLM application...")
-    
+
     # Create database
     create_database()
-    
+
     # Export category mapping
     export_category_mapping_json()
-    
+
     # Check Ollama connection
     ollama = OllamaService()
     if ollama.check_availability():
@@ -33,16 +33,16 @@ def init_app():
     else:
         print("✗ Could not connect to Ollama server at", os.getenv("OLLAMA_API_BASE"))
         print("  Make sure Ollama is running: ollama serve")
-    
+
     print("Initialization complete!")
 
 def process_data(file_path, **kwargs):
     """Process a CSV file of transactions"""
     processor = TransactionProcessor()
-    
+
     print(f"Processing file: {file_path}")
     num_saved, embedding_success = processor.process_file(file_path, **kwargs)
-    
+
     print(f"✓ {num_saved} transactions saved to database")
     if embedding_success:
         print("✓ Transactions successfully embedded in vector store")
@@ -52,14 +52,14 @@ def process_data(file_path, **kwargs):
 def process_all_data(source_type=None, account_name=None):
     """Process all data files with enhanced functionality"""
     processor = UnifiedProcessor()
-    
+
     # If specific source_type and account_name were provided, create a configuration
     file_configs = None
     if source_type:
         # Find all CSV files in the raw data directory
         raw_data_path = Path(os.getenv("RAW_DATA_PATH", "./data/raw"))
         file_paths = list(raw_data_path.glob('*.csv'))
-        
+
         file_configs = [
             {
                 'file_path': str(path),
@@ -68,17 +68,17 @@ def process_all_data(source_type=None, account_name=None):
             }
             for path in file_paths
         ]
-    
+
     # Process all files
     total, successful = processor.process_all_files(file_configs)
-    
+
     print(f"✓ Processed {total} transactions from {successful} files")
     return total, successful
 
 def process_accounts(accounts_config):
     """Process files for specific account configurations"""
     processor = UnifiedProcessor()
-    
+
     file_configs = []
     for config in accounts_config:
         file_configs.append({
@@ -86,10 +86,10 @@ def process_accounts(accounts_config):
             'source_type': config['source_type'],
             'account_name': config['account_name']
         })
-    
+
     # Process all files
     total, successful = processor.process_all_files(file_configs)
-    
+
     print(f"✓ Processed {total} transactions from {successful} files")
     return total, successful
 
@@ -97,22 +97,22 @@ def chat_mode(model_name="llama3:8b"):
     """Interactive chat with the finance assistant"""
     rag_engine = RAGEngine(model_name=model_name)
     ollama = OllamaService(model_name=model_name)
-    
+
     print(f"\nFinance Assistant (using {model_name})")
     print("=" * 50)
     print("Type your financial questions or 'exit' to quit.")
-    
+
     # Test Ollama availability
     if not ollama.check_availability():
         print("Could not connect to Ollama server. Make sure it's running.")
         return
-    
+
     while True:
         user_input = input("\nYou: ")
-        
+
         if user_input.lower() in ["exit", "quit"]:
             break
-        
+
         print("\nThinking...")
         response = rag_engine.generate_response(user_input)
         print("\nAssistant:", response)
@@ -121,10 +121,10 @@ def main():
     """Main entry point for the application"""
     parser = argparse.ArgumentParser(description="Finance LLM Application")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
-    
+
     # Initialize command
     init_parser = subparsers.add_parser("init", help="Initialize the application")
-    
+
     # Process data command
     process_parser = subparsers.add_parser("process", help="Process a CSV file of transactions")
     process_parser.add_argument("file", help="Path to the CSV file")
@@ -133,22 +133,22 @@ def main():
     process_parser.add_argument("--amount-col", default="Amount", help="Name of the amount column")
     process_parser.add_argument("--category-col", help="Name of the category column")
     process_parser.add_argument("--account-col", help="Name of the account column")
-    
+
     # Process all data command
     processall_parser = subparsers.add_parser("processall", help="Process all CSV files in the raw data directory")
     processall_parser.add_argument("--source-type", choices=["chase_card", "chase_account", "generic"], 
                                   help="Source type for all files")
     processall_parser.add_argument("--account-name", help="Account name for all files")
-    
+
     # Process accounts command
     accounts_parser = subparsers.add_parser("accounts", help="Process data for defined accounts")
-    
+
     # Chat command
     chat_parser = subparsers.add_parser("chat", help="Interactive chat with the finance assistant")
     chat_parser.add_argument("--model", default="llama3:8b", help="Model to use for chat")
-    
+
     args = parser.parse_args()
-    
+
     if args.command == "init":
         init_app()
     elif args.command == "process":

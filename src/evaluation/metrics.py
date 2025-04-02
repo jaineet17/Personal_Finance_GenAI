@@ -19,7 +19,7 @@ class ResponseMetrics:
     num_docs_retrieved: int = 0
     relevance_score: Optional[float] = None
     accuracy_score: Optional[float] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert metrics to dictionary for storage."""
         return {
@@ -38,21 +38,21 @@ class ResponseMetrics:
 
 class PerformanceTimer:
     """Simple timer for measuring performance."""
-    
+
     def __init__(self):
         self.start_time = None
         self.end_time = None
-    
+
     def start(self):
         """Start the timer."""
         self.start_time = time.time()
         return self
-    
+
     def stop(self):
         """Stop the timer and return elapsed time in milliseconds."""
         self.end_time = time.time()
         return self.elapsed_ms()
-    
+
     def elapsed_ms(self):
         """Return elapsed time in milliseconds."""
         if self.start_time is None:
@@ -63,41 +63,41 @@ class PerformanceTimer:
 
 class EvaluationResult:
     """Container for evaluation results across multiple queries."""
-    
+
     def __init__(self):
         self.metrics: List[ResponseMetrics] = []
         self.system_memory_usage: Dict[str, float] = {}
         self.timestamp = time.time()
         self.version = "1.0"
-    
+
     def add_response_metrics(self, metrics: ResponseMetrics):
         """Add metrics for a single response."""
         self.metrics.append(metrics)
-    
+
     def set_memory_usage(self, memory_usage: Dict[str, float]):
         """Set memory usage information."""
         self.system_memory_usage = memory_usage
-    
+
     def get_average_response_time(self) -> float:
         """Calculate average response time."""
         if not self.metrics:
             return 0
         return sum(m.response_time_ms for m in self.metrics) / len(self.metrics)
-    
+
     def get_average_accuracy(self) -> float:
         """Calculate average accuracy score."""
         scores = [m.accuracy_score for m in self.metrics if m.accuracy_score is not None]
         if not scores:
             return 0
         return sum(scores) / len(scores)
-    
+
     def get_average_relevance(self) -> float:
         """Calculate average relevance score."""
         scores = [m.relevance_score for m in self.metrics if m.relevance_score is not None]
         if not scores:
             return 0
         return sum(scores) / len(scores)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert results to dictionary for storage."""
         return {
