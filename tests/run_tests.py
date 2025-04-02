@@ -64,9 +64,16 @@ def run_tests(test_modules=None, generate_report=False):
                     "heading": "Finance RAG Test Results"
                 }
             )
-            html_runner.run(suite)
-            
-            print(f"\nHTML test report generated at: {report_file}")
+            # Ensure suite is valid before running
+            if suite and len(list(suite)) > 0:
+                try:
+                    html_runner.run(suite)
+                    print(f"\nHTML test report generated at: {report_file}")
+                except Exception as e:
+                    print(f"\nError generating HTML report: {e}")
+                    print("Continuing with standard test results...")
+            else:
+                print("\nNo tests found in suite, skipping HTML report generation")
             
         except ImportError:
             print("\nHTML report generation requires HtmlTestRunner.")
