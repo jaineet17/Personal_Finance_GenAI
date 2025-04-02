@@ -1,0 +1,56 @@
+{
+  "family": "finance-rag-task",
+  "networkMode": "awsvpc",
+  "executionRoleArn": "arn:aws:iam::338437205154:role/ecsTaskExecutionRole",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "containerDefinitions": [
+    {
+      "name": "finance-rag-container",
+      "image": "338437205154.dkr.ecr.us-east-1.amazonaws.com/finance-rag-api:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "PYTHONPATH",
+          "value": "/app"
+        },
+        {
+          "name": "DEFAULT_LLM_PROVIDER",
+          "value": "huggingface"
+        },
+        {
+          "name": "DEFAULT_LLM_MODEL",
+          "value": "mistralai/Mistral-7B-Instruct-v0.2"
+        },
+        {
+          "name": "CLOUD_DEPLOYMENT",
+          "value": "true"
+        },
+        {
+          "name": "HUGGINGFACE_API_KEY",
+          "value": "your_huggingface_api_key_here"
+        },
+        {
+          "name": "MONGODB_URI",
+          "value": "mongodb+srv://username:password@cluster.example.mongodb.net/finance_rag?retryWrites=true&w=majority"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/finance-rag-task",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+} 

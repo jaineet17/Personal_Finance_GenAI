@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  finance-rag-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - DEFAULT_LLM_PROVIDER=huggingface
+      - DEFAULT_LLM_MODEL=mistralai/Mistral-7B-Instruct-v0.2
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - CLOUD_DEPLOYMENT=true
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data 

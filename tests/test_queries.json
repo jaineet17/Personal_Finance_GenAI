@@ -1,0 +1,250 @@
+{
+  "basic_queries": [
+    {
+      "query": "How much did I spend on groceries in January 2025?",
+      "expected_properties": ["Groceries", "amount", "total", "January", "2025"],
+      "category_filter": "Groceries",
+      "expected_retrieval_count": 5
+    },
+    {
+      "query": "What was my total spending on food delivery in December 2024?",
+      "expected_properties": ["Food", "delivery", "Grubhub", "December", "2024"],
+      "category_filter": "Food",
+      "expected_retrieval_count": 3
+    },
+    {
+      "query": "How much did I spend at Instacart in February 2025?",
+      "expected_properties": ["Instacart", "amount", "February", "2025"],
+      "merchant_filter": "Instacart",
+      "expected_retrieval_count": 4
+    },
+    {
+      "query": "What were my transportation expenses in March 2025?",
+      "expected_properties": ["Transportation", "March", "2025"],
+      "category_filter": "Transportation",
+      "expected_retrieval_count": 3
+    },
+    {
+      "query": "How many transactions did I have in January 2025?",
+      "expected_properties": ["transaction", "January", "2025", "count", "number"],
+      "expected_retrieval_count": 20
+    }
+  ],
+  "intermediate_queries": [
+    {
+      "query": "Compare my grocery spending at Instacart between February 2025 and March 2025",
+      "expected_properties": ["Instacart", "grocery", "compare", "February", "March", "2025"],
+      "category_filter": "Groceries",
+      "expected_retrieval_count": 8
+    },
+    {
+      "query": "How much did I spend on food delivery services like Grubhub in December 2024?",
+      "expected_properties": ["food delivery", "Grubhub", "December", "2024"],
+      "category_filter": "Food",
+      "expected_retrieval_count": 3
+    },
+    {
+      "query": "What was my highest transaction amount in May 2024?",
+      "expected_properties": ["highest", "transaction", "May", "2024"],
+      "expected_retrieval_count": 10
+    },
+    {
+      "query": "How did my spending in January 2025 compare to February 2025?",
+      "expected_properties": ["spending", "January", "February", "2025", "compare"],
+      "expected_retrieval_count": 40
+    },
+    {
+      "query": "What are my top expense categories in January 2025?",
+      "expected_properties": ["categories", "top", "expense", "January", "2025"],
+      "expected_retrieval_count": 20
+    }
+  ],
+  "advanced_queries": [
+    {
+      "query": "If I keep spending on food delivery at the same rate as December 2024, how much will I spend annually?",
+      "expected_properties": ["food delivery", "December", "2024", "annual", "rate"],
+      "expected_retrieval_count": 5
+    },
+    {
+      "query": "How do my grocery expenses at Instacart compare to other grocery stores in February 2025?",
+      "expected_properties": ["Instacart", "grocery", "compare", "February", "2025"],
+      "expected_retrieval_count": 10
+    },
+    {
+      "query": "What unusual spending patterns do you notice in my transactions between January and March 2025?",
+      "expected_properties": ["unusual", "patterns", "January", "March", "2025"],
+      "expected_retrieval_count": 50
+    },
+    {
+      "query": "What percentage of my expenses in January 2025 went to food and groceries?",
+      "expected_properties": ["percentage", "food", "groceries", "January", "2025"],
+      "expected_retrieval_count": 20
+    },
+    {
+      "query": "Which subscription services did I pay for in January 2025 and what was the total cost?",
+      "expected_properties": ["subscription", "January", "2025", "total", "cost"],
+      "expected_retrieval_count": 10
+    }
+  ],
+  "real_data_queries": [
+    {
+      "query": "How much did I spend on Grubhub in December 2024?",
+      "expected_properties": ["Grubhub", "December", "2024", "amount"],
+      "expected_retrieval_count": 3
+    },
+    {
+      "query": "What was my total spending at Instacart in January 2025?",
+      "expected_properties": ["Instacart", "January", "2025", "total"],
+      "expected_retrieval_count": 5
+    },
+    {
+      "query": "Compare my Instacart spending between February and March 2025",
+      "expected_properties": ["Instacart", "February", "March", "2025", "compare"],
+      "expected_retrieval_count": 8
+    },
+    {
+      "query": "How did my transportation expenses change from September 2024 to November 2024?",
+      "expected_properties": ["transportation", "September", "November", "2024", "change"],
+      "expected_retrieval_count": 6
+    },
+    {
+      "query": "What was my highest expense category in January 2025?",
+      "expected_properties": ["highest", "category", "January", "2025"],
+      "expected_retrieval_count": 20
+    }
+  ],
+  "categorization_examples": [
+    {
+      "description": "GRUBHUBBANGKOKBALCONY",
+      "amount": -20.80,
+      "expected_category": "Food"
+    },
+    {
+      "description": "INSTACART",
+      "amount": -36.80,
+      "expected_category": "Groceries"
+    },
+    {
+      "description": "ZIPCAR",
+      "amount": -89.00,
+      "expected_category": "Transportation"
+    },
+    {
+      "description": "AMEX PAYMENT",
+      "amount": -500.00,
+      "expected_category": "Bills & Utilities"
+    },
+    {
+      "description": "DEPOSIT",
+      "amount": 2500.00,
+      "expected_category": "Income"
+    },
+    {
+      "description": "WEEE",
+      "amount": -43.02,
+      "expected_category": "Groceries"
+    },
+    {
+      "description": "GRUBHUBMINTTINDIANCUI",
+      "amount": -23.88,
+      "expected_category": "Food"
+    },
+    {
+      "description": "CHASE CREDIT CARD PAYMENT",
+      "amount": -1200.00,
+      "expected_category": "Bills & Utilities"
+    },
+    {
+      "description": "UTILITIES PAYMENT",
+      "amount": -75.42,
+      "expected_category": "Utilities"
+    },
+    {
+      "description": "GRUBHUBTAMARINDFLAVOR",
+      "amount": -16.93,
+      "expected_category": "Food"
+    }
+  ],
+  "test_transactions": [
+    {
+      "id": "grubhub_001",
+      "description": "GRUBHUBBANGKOKBALCONY",
+      "amount": -20.80,
+      "date": "2024-12-03",
+      "category": "Food",
+      "account": "Chase0435"
+    },
+    {
+      "id": "grubhub_002",
+      "description": "GRUBHUBMINTTINDIANCUI",
+      "amount": -23.88,
+      "date": "2024-12-05",
+      "category": "Food",
+      "account": "Chase0435"
+    },
+    {
+      "id": "grubhub_003",
+      "description": "GRUBHUBTAMARINDFLAVOR",
+      "amount": -16.93,
+      "date": "2024-12-06",
+      "category": "Food",
+      "account": "Chase0435"
+    },
+    {
+      "id": "instacart_001",
+      "description": "INSTACART",
+      "amount": -36.80,
+      "date": "2025-01-09",
+      "category": "Groceries",
+      "account": "Chase0435"
+    },
+    {
+      "id": "instacart_002",
+      "description": "INSTACART",
+      "amount": -33.27,
+      "date": "2025-01-04",
+      "category": "Groceries",
+      "account": "Chase0435"
+    },
+    {
+      "id": "instacart_003",
+      "description": "INSTACART",
+      "amount": -18.32,
+      "date": "2025-01-10",
+      "category": "Groceries",
+      "account": "Chase0435"
+    },
+    {
+      "id": "instacart_004",
+      "description": "INSTACART",
+      "amount": -30.83,
+      "date": "2025-01-16",
+      "category": "Groceries",
+      "account": "Chase0435"
+    },
+    {
+      "id": "instacart_005",
+      "description": "INSTACART",
+      "amount": -44.71,
+      "date": "2025-01-27",
+      "category": "Groceries",
+      "account": "Chase0435"
+    },
+    {
+      "id": "grocery_001",
+      "description": "WEEE",
+      "amount": -43.02,
+      "date": "2025-01-03",
+      "category": "Groceries",
+      "account": "Chase0435"
+    },
+    {
+      "id": "grocery_002",
+      "description": "WEEE",
+      "amount": -2.49,
+      "date": "2025-01-03",
+      "category": "Groceries",
+      "account": "Chase0435"
+    }
+  ]
+} 

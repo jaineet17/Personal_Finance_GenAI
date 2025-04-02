@@ -1,0 +1,106 @@
+service: finance-rag-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.10
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  memorySize: 256 # Keeping memory low for free tier
+  timeout: 30
+  environment:
+    STAGE: ${self:provider.stage}
+    PYTHONPATH: ".:/opt/python:/var/task"
+    OLLAMA_API_URL: ${env:OLLAMA_API_URL, 'http://localhost:11434'}
+    DATABASE_URL: ${env:DATABASE_URL, 'sqlite:///./finance.db'}
+    VECTOR_DB_PATH: ${env:VECTOR_DB_PATH, './vector_db'}
+    MONGODB_URI: ${env:MONGODB_URI}
+  
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "arn:aws:logs:*:*:*"
+
+package:
+  patterns:
+    - '!**/*'
+    - '!node_modules/**'
+    - '!.venv/**'
+    - '!.git/**'
+    - '!tests/**'
+    - '!evaluation_results/**'
+    - '!.serverless/**'
+    - 'src/**/*.py'
+    - 'requirements.txt'
+
+functions:
+  query:
+    handler: src/api/lambda_handlers.query_handler
+    events:
+      - http:
+          path: /query
+          method: post
+          cors: true
+    environment:
+      FUNCTION_NAME: query
+
+  upload:
+    handler: src/api/lambda_handlers.upload_handler
+    events:
+      - http:
+          path: /upload
+          method: post
+          cors: true
+    environment:
+      FUNCTION_NAME: upload
+
+  feedback:
+    handler: src/api/lambda_handlers.feedback_handler
+    events:
+      - http:
+          path: /feedback
+          method: post
+          cors: true
+    environment:
+      FUNCTION_NAME: feedback
+
+resources:
+  Resources:
+    PythonLibsLayer:
+      Type: AWS::Lambda::LayerVersion
+      Properties:
+        LayerName: finance-rag-libs
+        Description: Python dependencies for Finance RAG
+        ContentUri: ./layers/python/
+        CompatibleRuntimes:
+          - python3.10
+
+custom:
+  pythonRequirements:
+    dockerizePip: false
+    layer: true
+    slim: true # Reduce size for free tier limits
+    useDownloadCache: true
+    useStaticCache: true
+    slimPatterns:
+      - "**/*.egg-info/**"
+      - "**/*.dist-info/**"
+      - "**/__pycache__/**"
+      - "**/*.pyc"
+    strip: true
+    noDeploy:
+      - pytest
+      - pytest-cov
+      - black
+      - isort
+      - mypy
+
+plugins:
+  - serverless-python-requirements
+  - serverless-dotenv-plugin 

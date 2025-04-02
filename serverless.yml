@@ -1,0 +1,97 @@
+service: finance-rag-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.11
+  stage: ${env:STAGE, 'dev'}
+  region: us-east-1
+  memorySize: 256
+  timeout: 30
+  environment:
+    STAGE: ${env:STAGE, 'dev'}
+    PYTHONPATH: ".:/opt/python:/var/task"
+    DATABASE_URL: ${env:DATABASE_URL}
+    VECTOR_DB_PATH: ${env:VECTOR_DB_PATH}
+    MONGODB_URI: ${env:MONGODB_URI}
+    HUGGINGFACE_API_KEY: ${env:HUGGINGFACE_API_KEY}
+    DEFAULT_LLM_PROVIDER: "huggingface"
+    DEFAULT_LLM_MODEL: "mistralai/Mistral-7B-Instruct-v0.2"
+    CLOUD_DEPLOYMENT: "true"
+  
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "arn:aws:logs:*:*:*"
+
+package:
+  individually: false
+  patterns:
+    - '!**'
+    - '!node_modules/**'
+    - '!.serverless/**'
+    - '!.venv/**'
+    - '!venv/**'
+    - '!__pycache__/**'
+    - '!.git/**'
+    - '!.github/**'
+    - '!tests/**'
+    - '!**/*.pyc'
+    - 'src/**/*.py'
+    - '!src/infrastructure/**'
+    - 'requirements-lambda.txt'
+
+functions:
+  api:
+    handler: src/api/lambda_handlers.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: any
+          cors: true
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    usePipenv: false
+    pythonBin: python3.11
+    usePoetry: false
+    useDownloadCache: true
+    useStaticCache: true
+    slim: true
+    slimPatterns:
+      - "**/*.egg-info*"
+      - "**/*.dist-info*"
+      - "**/__pycache__/**"
+      - "**/*.pyc"
+      - "**/*.pyo"
+      - "**/*.so"
+    slimPatternsAppendDefaults: true
+    noDeploy:
+      - pytest
+      - pytest-cov
+      - black
+      - isort
+      - mypy
+      - pylint
+      - numpy
+      - pandas
+      - matplotlib
+      - seaborn
+      - nltk
+      - spacy
+      - transformers
+      - huggingface-hub
+      - openai
+      - anthropic
+      - tqdm
+    fileName: requirements-lambda.txt 

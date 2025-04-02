@@ -1,0 +1,53 @@
+[build]
+  # Directory where the built assets are located
+  publish = "frontend/dist"
+  
+  # Build command
+  command = "cd frontend && npm run build"
+
+# Environment variables
+[build.environment]
+  NODE_VERSION = "16.14.0"
+  NPM_VERSION = "8.5.0"
+
+# Redirects configuration for SPA behavior
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cache control headers
+[[headers]]
+  # Define which paths this specific [[headers]] block will cover
+  for = "/*"
+    [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/static/*"
+    [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Function configuration for free tier Netlify Functions
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# For free tier, limit build minutes
+[build.processing]
+  skip_processing = true
+
+# Optimize bundle size for free tier bandwidth limits
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true 
