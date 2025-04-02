@@ -4,15 +4,10 @@
   "description": "Finance RAG API Backend",
   "private": true,
   "scripts": {
-    "deploy:dev": "cd src/infrastructure && serverless deploy --stage dev",
-    "deploy:prod": "cd src/infrastructure && serverless deploy --stage prod",
-    "test": "pytest"
+    "test": "python -m tests.run_tests",
+    "dev": "python src/app.py",
+    "start-api": "cd src/api && python app.py"
   },
-  "dependencies": {
-    "serverless": "^3.34.0"
-  },
-  "devDependencies": {
-    "serverless-python-requirements": "^6.0.0",
-    "serverless-dotenv-plugin": "^6.0.0"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

@@ -1,0 +1,62 @@
+name: Project Verification
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install html-testRunner
+      
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 src
+      
+      - name: Run tests
+        run: python -m tests.run_tests --report
+        env:
+          DEFAULT_LLM_PROVIDER: huggingface
+          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+          DATA_DIR: tests/test_data
+      
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+        
+      - name: Generate documentation
+        run: |
+          echo "Generating documentation..."
+          pip install mkdocs mkdocs-material
+          mkdir -p site_docs
+          cp -r docs/* site_docs/
+          echo "# Finance RAG Application" > site_docs/index.md
+          echo "## Project Documentation" >> site_docs/index.md
+          echo "- [Deployment Guide](DEPLOYMENT_GUIDE.md)" >> site_docs/index.md
+          echo "- [Cloud Security](CLOUD_SECURITY.md)" >> site_docs/index.md
+          echo "- [Monitoring](MONITORING.md)" >> site_docs/index.md
+          echo "- [Phase 6 Completion](PHASE_6_COMPLETION.md)" >> site_docs/index.md
+      
+      - name: Archive documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: project-documentation
+          path: site_docs/ 

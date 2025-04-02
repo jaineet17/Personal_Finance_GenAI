@@ -33,4 +33,13 @@ jobs:
         env:
           DEFAULT_LLM_PROVIDER: huggingface
           HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
-          DATA_DIR: tests/test_data 
+          DATA_DIR: tests/test_data
+      
+      - name: Validate code structure
+        run: |
+          echo "Validating project structure..."
+          test -d src/api || { echo "Missing src/api directory"; exit 1; }
+          test -d src/data_processing || { echo "Missing src/data_processing directory"; exit 1; }
+          test -d src/embedding || { echo "Missing src/embedding directory"; exit 1; }
+          test -d src/rag || { echo "Missing src/rag directory"; exit 1; }
+          echo "Project structure validated successfully" 
